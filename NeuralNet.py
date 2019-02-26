@@ -61,11 +61,12 @@ class NeuralNetwork:
 
         adjustments = []
         output_error = self.y - self.output
-        output_delta = np.dot(output_error, relu_derivative(self.output))
-        output_correction = self.output(1-self.output)*output_error
+        output_delta = output_error * relu_derivative(self.output)
+        # output_delta = np.dot(output_error, relu_derivative(self.output))
+        # output_correction = self.output(1-self.output)*output_error
 
         for index, layer in reversed(list(enumerate(self.layers))):
-            error = np.dot(output_delta, self.weights[index])
+            error = output_delta.dot(self.weights[index].T)
             delta = error*relu_derivative(layer)
             adjustment = 0
 
