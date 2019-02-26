@@ -22,8 +22,9 @@ class NeuralNetwork:
         self.y = y/10.
         self.hidden_layer_sizes = hidden_layer_sizes
         self.output_size = 1
+        self.layer_sizes = (len(self.x[1]),) + self.hidden_layer_sizes + (self.output_size,)
         self.layers = []
-        self.n_layers = len(hidden_layer_sizes)
+        self.n_layers = len(self.layer_sizes)
         self.weights = []
 
 
@@ -39,13 +40,15 @@ class NeuralNetwork:
         # get the initial weights for each layer
         self.create_weights()
 
+        print(self.weights[1].shape)
+
         # create the first layer using the NN input x
         first_layer = relu(np.dot(self.x, self.weights[0]))
         self.layers.append(first_layer)
 
         layer = None
         for i in range(self.n_layers-1):
-            layer = relu(np.dot(self.layers[i], self.weights[i+1]))
+            layer = relu(np.dot(self.layers[i], self.weights[i]))
             self.layers.append(layer)
 
         return layer
@@ -74,15 +77,18 @@ class NeuralNetwork:
 
     def create_weights(self):
         """
-        Create the weights for each layer in the NN
+        Create the weights for each layer in the NN. If there are 2 hidden layers, 3 sets of weights will be created
         """
-        for i in range(self.n_layers):
-            in_size = self.hidden_layer_sizes[i]
-            out_size = self.output_size
-            if len(self.hidden_layer_sizes) > i+1:
-                out_size = self.hidden_layer_sizes[i+1]
-            self.weights.append(np.random.uniform(-1/(math.sqrt(self.hidden_layer_sizes[i])),
-                                                  1/(math.sqrt(self.hidden_layer_sizes[i])),
+        for i in range(self.n_layers-1):
+            # get the size of the start layer
+            in_size = self.layer_sizes[i]
+            print(str(in_size))
+            # get the size of the next layer
+            out_size = self.layer_sizes[i+1]
+            # if len(self.hidden_layer_sizes) > i+1:
+            #     out_size = self.hidden_layer_sizes[i+1]
+            self.weights.append(np.random.uniform(-1/(math.sqrt(self.layer_sizes[i])),
+                                                  1/(math.sqrt(self.layer_sizes[i])),
                                                   (in_size, out_size)))
 
 
