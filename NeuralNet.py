@@ -20,10 +20,11 @@ class NeuralNetwork:
         """
         self.x = x
         self.y = y/10.
-        self.hidden_layer_sizes = hidden_layer_sizes
         self.output_size = 1
+        self.hidden_layer_sizes = hidden_layer_sizes
+        self.layer_sizes = hidden_layer_sizes + (self.output_size,)
         self.layers = []
-        self.n_layers = len(hidden_layer_sizes)
+        self.n_layers = len(self.layer_sizes)
         self.weights = []
 
 
@@ -44,7 +45,7 @@ class NeuralNetwork:
         self.layers.append(first_layer)
 
         layer = None
-        for i in range(self.n_layers-1):
+        for i in range(self.n_layers):
             layer = relu(np.dot(self.layers[i], self.weights[i+1]))
             self.layers.append(layer)
 
@@ -58,15 +59,19 @@ class NeuralNetwork:
         print(len(self.weights))
         print(len(self.layers))
 
-
-        adjustments = []
+        corrections = []
         output_error = self.y - self.output
-        output_delta = output_error * relu_derivative(self.output)
+        delta = output_error * relu_derivative(self.output)
         # output_delta = np.dot(output_error, relu_derivative(self.output))
-        # output_correction = self.output(1-self.output)*output_error
+        # output_correction = np.dot(self.)
 
         for index, layer in reversed(list(enumerate(self.layers))):
-            error = output_delta.dot(self.weights[index].T)
+            print("INDEX: " + str(index))
+            if index is 0:
+                correction = np.dot(layer.T, delta)
+                corrections.append(correction)
+                break
+            error = np.dot(delta, self.weights[index].T)
             delta = error*relu_derivative(layer)
             adjustment = 0
 
@@ -74,6 +79,7 @@ class NeuralNetwork:
 
     def create_weights(self):
         """
+        TODO: COmment this function
         Create the weights for each layer in the NN
         """
         for i in range(self.n_layers):
