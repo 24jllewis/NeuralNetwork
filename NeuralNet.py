@@ -16,12 +16,13 @@ class NeuralNetwork:
         Constructor
         :param x: input
         :param y: output
-        :param hidden_layer_sizes:
+        :param hidden_layer_sizes: tuple of the sizes of the hidden layers
         """
         self.x = x
-        self.y = y/10.
+        self.y = np.array(y/10.).reshape(len(y), 1)
         self.hidden_layer_sizes = hidden_layer_sizes
         self.output_size = 1
+        # create new tuple of every layer size
         self.layer_sizes = (len(self.x[1]),) + self.hidden_layer_sizes + (self.output_size,)
         self.layers = []
         self.n_layers = len(self.layer_sizes)
@@ -40,17 +41,16 @@ class NeuralNetwork:
         # get the initial weights for each layer
         self.create_weights()
 
-        print(self.weights[1].shape)
-
         # create the first layer using the NN input x
-        first_layer = relu(np.dot(self.x, self.weights[0]))
-        self.layers.append(first_layer)
+        layer = relu(np.dot(self.x, self.weights[0]))
+        self.layers.append(layer)
 
-        layer = None
-        for i in range(self.n_layers-1):
-            layer = relu(np.dot(self.layers[i], self.weights[i]))
+        for i in range(len(self.weights)-1):
+            # for each weight in self.weights create a new layer based on the previous layer
+            layer = relu(np.dot(layer, self.weights[i+1]))
             self.layers.append(layer)
 
+        # return the last (output) layer
         return layer
 
     def backprop(self):
@@ -58,21 +58,29 @@ class NeuralNetwork:
         Performs the back-propagation for the neural network
         :return:
         """
-        print(len(self.weights))
-        print(len(self.layers))
-
-
-        adjustments = []
         output_error = self.y - self.output
-        output_delta = output_error * relu_derivative(self.output)
+        # delta = np.dot(output_error, relu_derivative(self.output)) #TODO: CHECK IF THIS IS OK AS A DOT
+        delta = output_error * relu_derivative(self.output)
         # output_delta = np.dot(output_error, relu_derivative(self.output))
-        # output_correction = self.output(1-self.output)*output_error
+        adjustments = [np.dot(self.layers[len(self.layers)-1].T, delta)]
+
+        self.layers.pop()
 
         for index, layer in reversed(list(enumerate(self.layers))):
-            error = output_delta.dot(self.weights[index].T)
-            delta = error*relu_derivative(layer)
-            adjustment = 0
+            error = np.dot(delta, self.weights[index+1].T)
+            # print("ERROR SHAPE: "+ str(error.shape))
+            # print("WEIGHTSHAPE: " + str(self.weights[index+1].shape))
+            delta = error * relu_derivative(layer)
+            if index is 0:
+                # this adds an extra element containing the input to the end of self.layers
+                # it allows the self.layers[index-1] access below to access the "-1" element which will be the last
+                # element in the list
+                self.layers.append(self.x)
+            adjustment = np.dot(self.layers[index-1].T, delta)
+            adjustments.insert(0, adjustment)
 
+        for index, adjustment in enumerate(adjustments):
+            self.weights[index] += adjustment
 
 
     def create_weights(self):
@@ -82,7 +90,6 @@ class NeuralNetwork:
         for i in range(self.n_layers-1):
             # get the size of the start layer
             in_size = self.layer_sizes[i]
-            print(str(in_size))
             # get the size of the next layer
             out_size = self.layer_sizes[i+1]
             # if len(self.hidden_layer_sizes) > i+1:
@@ -90,7 +97,6 @@ class NeuralNetwork:
             self.weights.append(np.random.uniform(-1/(math.sqrt(self.layer_sizes[i])),
                                                   1/(math.sqrt(self.layer_sizes[i])),
                                                   (in_size, out_size)))
-
 
 
 
