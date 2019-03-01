@@ -27,10 +27,10 @@ class NeuralNetwork:
         self.layers = []
         self.n_layers = len(self.layer_sizes)
         self.weights = []
-
-
-        self.output = self.feedforward()
-        self.backprop()
+        self.output = np.zeros(y.shape)
+        # get the initial weights for each layer
+        self.create_weights()
+        self.run()
         
 
     def feedforward(self):
@@ -38,9 +38,7 @@ class NeuralNetwork:
         Performs the feedforward action in the NN
         :return:
         """
-        # get the initial weights for each layer
-        self.create_weights()
-
+        self.layers = []
         # create the first layer using the NN input x
         layer = relu(np.dot(self.x, self.weights[0]))
         self.layers.append(layer)
@@ -98,6 +96,24 @@ class NeuralNetwork:
                                                   1/(math.sqrt(self.layer_sizes[i])),
                                                   (in_size, out_size)))
 
+    def train(self):
+        self.output = self.feedforward()
+        self.backprop()
+
+
+    def run(self):
+        for i in range(1500):  # trains the NN 1,000 times
+            self.train()
+            if i % 100 == 0:
+                print ("for iteration # " + str(i))
+                # print ("Input : \n" + str(self.x))
+                # print ("Actual Output: \n" + str(self.y))
+                # print ("Predicted Output: \n" + str(self.feedforward()))
+                print ("Loss: \n" + str(np.mean(np.square(self.y - self.output))))  # mean sum squared loss
+                print("Weight 0: " + str(self.weights[0]))
+                print ("\n")
+
+
 
 
 def relu(x):
@@ -121,7 +137,13 @@ def relu_derivative(x):
 def main():
     digits = datasets.load_digits()
     images_and_labels = list(zip(digits.images, digits.target))
-    NeuralNetwork(digits.data, digits.target, hidden_layer_sizes=(64, 32))
+    mynn = NeuralNetwork(digits.data, digits.target, hidden_layer_sizes=(64, 32))
+
+    # mynn.run()
+
+
+
+
 
 
 if __name__ == "__main__":
