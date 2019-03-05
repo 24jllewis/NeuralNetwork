@@ -2,6 +2,7 @@
 # Creating a back-prop NN in python
 # referenced https://towardsdatascience.com/how-to-build-your-own-neural-network-from-scratch-in-python-68998a08e4f6 for
 # some assistance
+# also referenced https://www.kdnuggets.com/2018/04/building-convolutional-neural-network-numpy-scratch.html
 
 import numpy as np
 import math
@@ -22,6 +23,12 @@ class NeuralNetwork:
         self.y = np.array(y/10.).reshape(len(y), 1)
         self.hidden_layer_sizes = hidden_layer_sizes
         self.output_size = 1
+
+        # create the filters for
+        # hardcoded, needs to be updated
+        filter = np.zeros((2, 3, 3))
+        filter[0, :, :] = 0
+
         # create new tuple of every layer size
         self.layer_sizes = (len(self.x[1]),) + self.hidden_layer_sizes + (self.output_size,)
         self.layers = []
@@ -62,9 +69,11 @@ class NeuralNetwork:
         # output_delta = np.dot(output_error, relu_derivative(self.output))
         adjustments = [np.dot(self.layers[len(self.layers)-1].T, delta)]
 
+        # remove the output layer from our layers variable
         self.layers.pop()
 
         for index, layer in reversed(list(enumerate(self.layers))):
+            x = self.weights[index+1].T
             error = np.dot(delta, self.weights[index+1].T)
             # print("ERROR SHAPE: "+ str(error.shape))
             # print("WEIGHTSHAPE: " + str(self.weights[index+1].shape))
@@ -78,6 +87,7 @@ class NeuralNetwork:
             adjustments.insert(0, adjustment)
 
         for index, adjustment in enumerate(adjustments):
+            # print("Adjustment: " + str(adjustment))
             self.weights[index] += adjustment
 
 
@@ -102,16 +112,16 @@ class NeuralNetwork:
 
 
     def run(self):
-        for i in range(1500):  # trains the NN 1,000 times
+        for i in range(1500):  # trains the NN 1,500 times
             self.train()
             if i % 100 == 0:
-                print ("for iteration # " + str(i))
+                print("for iteration # " + str(i))
                 # print ("Input : \n" + str(self.x))
                 # print ("Actual Output: \n" + str(self.y))
                 # print ("Predicted Output: \n" + str(self.feedforward()))
-                print ("Loss: \n" + str(np.mean(np.square(self.y - self.output))))  # mean sum squared loss
-                print("Weight 0: " + str(self.weights[0]))
-                print ("\n")
+                print("Loss: \n" + str(np.mean(np.square(self.y - self.output))))  # mean sum squared loss
+                # print("Weight 0: " + str(self.weights[0]))
+                print("\n")
 
 
 
@@ -135,10 +145,12 @@ def relu_derivative(x):
 
 
 def main():
-    digits = datasets.load_digits()
-    images_and_labels = list(zip(digits.images, digits.target))
-    mynn = NeuralNetwork(digits.data, digits.target, hidden_layer_sizes=(64, 32))
+    images = datasets.load_digits()
+    # images_and_labels = list(zip(diabetes.images, diabetes.target))
+    # mynn = NeuralNetwork(images.data, images.target, hidden_layer_sizes=(1000,))
+    mynn = NeuralNetwork(images.data, images.target)
 
+    # print(digits.images[0])
     # mynn.run()
 
 
