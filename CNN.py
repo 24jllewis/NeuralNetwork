@@ -43,6 +43,19 @@ def one_hot_label(classes, label):
 
 def main():
     train_data, train_labels, test_data, test_labels, classes = get_data()
+    weights = {}
+    batch_size = 32
+    rate = 0.02
+    epochs = 10
+
+
+
+    conv_dims = [(32, 1, 5, 5), (64, 32, 5, 5)]
+    dense_dims = [3136, 1024, classes]
+
+    #now train
+
+    layer_dims = (conv_dims, dense_dims)
     pass
 
 
